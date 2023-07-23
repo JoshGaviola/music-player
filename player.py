@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QSlider
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
-from PyQt5.QtCore import Qt, QUrl
+from PyQt5.QtCore import Qt, QUrl, QTimer
 
 class MusicPlayer(QMainWindow):
     def __init__(self):
@@ -35,6 +35,17 @@ class MusicPlayer(QMainWindow):
         self.volume_slider.setValue(50)
         self.volume_slider.valueChanged.connect(self.set_volume)
 
+        # Create a separate slider to display the current position
+        self.position_slider = QSlider(Qt.Horizontal, self)
+        self.position_slider.setGeometry(50, 50, 375, 30)
+        self.position_slider.setValue(0)
+        self.position_slider.setEnabled(False)
+
+        # Create a QTimer to update the position slider every 100 milliseconds
+        self.slider_timer = QTimer(self)
+        self.slider_timer.timeout.connect(self.update_position_slider)
+        self.slider_timer.start(100)
+
     def initMediaPlayer(self):
         self.media_player = QMediaPlayer(self)
         self.media_player.positionChanged.connect(self.update_position)
@@ -58,14 +69,18 @@ class MusicPlayer(QMainWindow):
     def set_volume(self, value):
         self.media_player.setVolume(value)
 
+    def update_position_slider(self):
+        # Update the position slider with the current position of the media player
+        position = self.media_player.position()
+        self.position_slider.setValue(position)
+
     def update_position(self, position):
-        self.volume_slider.setValue(position)
+        self.position_slider.setValue(position)
 
     def update_duration(self, duration):
-        self.volume_slider.setMaximum(duration)
+        self.position_slider.setMaximum(duration)
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    player = MusicPlayer()
-    player.show()
-    sys.exit(app.exec_())
+app = QApplication(sys.argv)
+player = MusicPlayer()
+player.show()
+sys.exit(app.exec_())
