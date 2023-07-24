@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QSlider, QLabel
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QSlider, QLabel, QMessageBox
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtCore import Qt, QUrl, QTimer
 
@@ -12,7 +12,11 @@ class MusicPlayer(QMainWindow):
 
     def initUI(self):
         self.setWindowTitle("Music Player")
-        self.setGeometry(100, 100, 400, 250)  # Increased window height to accommodate the QLabel
+        self.setGeometry(100, 100, 400, 200)
+
+        self.song_label = QLabel("No Song Selected", self)  # Add QLabel for metadata display
+        self.song_label.setGeometry(50, 20, 375, 25)
+        self.song_label.setAlignment(Qt.AlignCenter)
 
         self.play_button = QPushButton("Play", self)
         self.play_button.setGeometry(50, 150, 75, 30)
@@ -41,10 +45,6 @@ class MusicPlayer(QMainWindow):
         self.position_slider.setValue(0)
         self.position_slider.setEnabled(False)
 
-        # Create a QLabel to display the file name
-        self.file_name_label = QLabel("No File Selected", self)
-        self.file_name_label.setGeometry(50, 20, 375, 30)
-
         # Create a QTimer to update the position slider every 100 milliseconds
         self.slider_timer = QTimer(self)
         self.slider_timer.timeout.connect(self.update_position_slider)
@@ -54,13 +54,38 @@ class MusicPlayer(QMainWindow):
         self.media_player = QMediaPlayer(self)
         self.media_player.positionChanged.connect(self.update_position)
         self.media_player.durationChanged.connect(self.update_duration)
+        self.media_player.error.connect(self.media_error_handler)
+
 
     def play_music(self):
-        file_name, _ = QFileDialog.getOpenFileName(self, "Open MP3 File", "", "MP3 Files (*.mp3);;All Files (*)")
+        file_name, _ = QFileDialog.getOpenFileName(self, "Open Audio File", "", "Audio Files (*.mp3 *.wav *.flac);;All Files (*)")
         if file_name:
-            self.media_player.setMedia(QMediaContent(QUrl.fromLocalFile(file_name)))
-            self.file_name_label.setText(file_name)  # Update the file name label
-            self.media_player.play()
+            try:
+                self.media_player.setMedia(QMediaContent(QUrl.fromLocalFile(file_name)))
+                self.media_player.play()
+                self.setWindowTitle(f"Music Player - {file_name}")
+                self.song_label.setText(f"Playing: {file_name}")  # Update QLabel with song file name
+            except Exception as e:
+                # Catch any exceptions during playback and display an error message
+                error_message = f"Error occurred during playback:\n{str(e)}"
+                self.show_error_message(error_message)
+
+    def show_error_message(self, message):
+        # Display a message box with the given error message
+        error_box = QMessageBox(self)
+        error_box.setWindowTitle("Error")
+        error_box.setText(message)
+        error_box.setIcon(QMessageBox.Warning)
+        error_box.setStandardButtons(QMessageBox.Ok)
+        error_box.exec_()
+
+    def media_error_handler(self, error):
+        if error == QMediaPlayer.ResourceError:
+            self.show_error_message("Error: The selected file cannot be played. Please try a different file.")
+        elif error == QMediaPlayer.FormatError:
+            self.show_error_message("Error: The selected file format is not supported.")
+        else:
+            self.show_error_message("An error occurred during playback. Please try again or select a different file.")
 
     def pause_music(self):
         self.media_player.pause()
