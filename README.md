@@ -32,10 +32,10 @@ The Music Player Application is a simple PyQt5-based desktop application that al
 Usage
 1.) Run the application: python music_player.py
 2.) Click on the "Play" button to select an audio file (MP3, WAV, FLAC) from your system.
-3.)Use the control buttons to play, pause, forward, and rewind the audio.
-4.)Adjust the volume using the volume slider.
-5.)The separate slider displays the current position of the playing audio.
-  
+3.) Use the control buttons to play, pause, forward, and rewind the audio.
+4.) Adjust the volume using the volume slider.
+5.) The separate slider displays the current position of the playing audio.
+   
 Known Issues
    The application does not support displaying metadata for audio files like artist name, album, etc.
    Contributing
