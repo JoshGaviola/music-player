@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QSlider
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QFileDialog, QSlider, QLabel
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtCore import Qt, QUrl, QTimer
 
@@ -12,7 +12,7 @@ class MusicPlayer(QMainWindow):
 
     def initUI(self):
         self.setWindowTitle("Music Player")
-        self.setGeometry(100, 100, 400, 200)
+        self.setGeometry(100, 100, 400, 250)  # Increased window height to accommodate the QLabel
 
         self.play_button = QPushButton("Play", self)
         self.play_button.setGeometry(50, 150, 75, 30)
@@ -41,6 +41,10 @@ class MusicPlayer(QMainWindow):
         self.position_slider.setValue(0)
         self.position_slider.setEnabled(False)
 
+        # Create a QLabel to display the file name
+        self.file_name_label = QLabel("No File Selected", self)
+        self.file_name_label.setGeometry(50, 20, 375, 30)
+
         # Create a QTimer to update the position slider every 100 milliseconds
         self.slider_timer = QTimer(self)
         self.slider_timer.timeout.connect(self.update_position_slider)
@@ -55,6 +59,7 @@ class MusicPlayer(QMainWindow):
         file_name, _ = QFileDialog.getOpenFileName(self, "Open MP3 File", "", "MP3 Files (*.mp3);;All Files (*)")
         if file_name:
             self.media_player.setMedia(QMediaContent(QUrl.fromLocalFile(file_name)))
+            self.file_name_label.setText(file_name)  # Update the file name label
             self.media_player.play()
 
     def pause_music(self):
